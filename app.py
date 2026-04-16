@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-API_KEY = os.getenv("API")
+API_KEY = os.getenv("API") or st.secrets.get("API")
 st.set_page_config(page_title="Поддержка", page_icon="🌱")
 st.title("Первая психологическая помощь")
 if not API_KEY:
