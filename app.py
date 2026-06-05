@@ -58,6 +58,7 @@ if user_input := st.chat_input("Что вас беспокоит?"):
             response_data = response.json()
 
             if response.status_code == 200:
+                import re
                 reply = response_data['candidates'][0]['content']['parts'][0]['text']
                 
                 patterns = [
