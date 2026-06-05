@@ -68,8 +68,7 @@ if user_input := st.chat_input("Что вас беспокоит?"):
                 "generationConfig": {
                     "temperature": 0.7,
                     "maxOutputTokens": 800
-                },
-                "think": False  # <--- ОТКЛЮЧАЕТ МЫСЛИ ВСЛУХ НА УРОВНЕ API
+                }
             }
 
             response = requests.post(url, headers=headers, json=payload)
@@ -77,9 +76,6 @@ if user_input := st.chat_input("Что вас беспокоит?"):
 
             if response.status_code == 200:
                 reply = response_data['candidates'][0]['content']['parts'][0]['text']
-                
-                # Поскольку "think": False убирает сам блок мыслей,
-                # нам остается только сделать легкую очистку от лишних пробелов по краям
                 reply = reply.strip()
                 
                 st.markdown(reply)
