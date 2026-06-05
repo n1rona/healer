@@ -60,22 +60,8 @@ if user_input := st.chat_input("Что вас беспокоит?"):
             if response.status_code == 200:
                 import re
                 reply = response_data['candidates'][0]['content']['parts'][0]['text']
-                
-                patterns = [
-                    r'(?:^|\n)(Привет[!.,]?\s)',
-                    r'(?:^|\n)(Здравствуй[!.,]?\s)',
-                    r'(?:^|\n)(Мне\s+очень\s+жаль)',
-                    r'(?:^|\n)(Понимаю[!.,]?\s)',
-                    r'(?:^|\n)(Я\s+здесь[!.,]?\s)',
-                    r'(?:^|\n)(Расскажи[!.,]?\s)',
-                ]
-                cut_pos = len(reply)
-                for pat in patterns:
-                    match = re.search(pat, reply)
-                    if match and match.start() < cut_pos:
-                        cut_pos = match.start()
-                if cut_pos < len(reply):
-                    reply = reply[cut_pos:].strip()
+                thinking_pattern = r'<\|channel\|?>thought\s*<\|?channel\|?>'
+                reply = re.sub(thinking_pattern, '', reply, flags=re.IGNORECASE)
                 
                 lines = reply.splitlines()
                 cleaned = []
@@ -83,9 +69,10 @@ if user_input := st.chat_input("Что вас беспокоит?"):
                     s = line.strip()
                     if not s:
                         continue
-                    if re.match(r'^(Short\?|Warm/Supportive\?|No medical advice\?|Final answer only\?|Technique:)', s):
+                    if re.match(r'^(Short\?|Warm/Supportive\?|No medical advice\?|Final answer only\?|Technique:)', s, re.IGNORECASE):
                         continue
                     cleaned.append(s)
+                
                 reply = '\n'.join(cleaned).strip()
                 
                 if not reply:
