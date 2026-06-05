@@ -60,36 +60,32 @@ if user_input := st.chat_input("Что вас беспокоит?"):
             if response.status_code == 200:
                 reply = response_data['candidates'][0]['content']['parts'][0]['text']
                 
-                import re
-                
-                for marker in ["Ответ:", "Final answer:", "Мой ответ:", "Assistant:"]:
-                    if marker in reply:
-                        reply = reply.split(marker, 1)[-1].strip()
-                        break
+                patterns = [
+                    r'(?:^|\n)(Привет[!.,]?\s)',
+                    r'(?:^|\n)(Здравствуй[!.,]?\s)',
+                    r'(?:^|\n)(Мне\s+очень\s+жаль)',
+                    r'(?:^|\n)(Понимаю[!.,]?\s)',
+                    r'(?:^|\n)(Я\s+здесь[!.,]?\s)',
+                    r'(?:^|\n)(Расскажи[!.,]?\s)',
+                ]
+                cut_pos = len(reply)
+                for pat in patterns:
+                    match = re.search(pat, reply)
+                    if match and match.start() < cut_pos:
+                        cut_pos = match.start()
+                if cut_pos < len(reply):
+                    reply = reply[cut_pos:].strip()
                 
                 lines = reply.splitlines()
-                cleaned_lines = []
-                introspection_patterns = [
-                    r'^Short\?', r'^Warm/Supportive\?', r'^No medical advice\?',
-                    r'^No internal thoughts\?', r'^Reflecting feelings:?', r'^Validation:?',
-                    r'^Active listening:?', r'^Open question:?', r'^Review against rules:?',
-                    r'^Draft \d:', r'^\*', r'^Проверка:', r'^Анализ:',
-                ]
+                cleaned = []
                 for line in lines:
-                    stripped = line.strip()
-                    if not stripped:
+                    s = line.strip()
+                    if not s:
                         continue
-                    if any(re.match(pat, stripped) for pat in introspection_patterns):
+                    if re.match(r'^(Short\?|Warm/Supportive\?|No medical advice\?|Final answer only\?|Technique:)', s):
                         continue
-                    if "→" in stripped or "->" in stripped:
-                        continue
-                    cleaned_lines.append(stripped)
-                
-                reply = "\n".join(cleaned_lines).strip()
-                
-                paragraphs = [p for p in reply.split("\n\n") if p.strip()]
-                if len(paragraphs) > 1:
-                    reply = paragraphs[-1].strip()
+                    cleaned.append(s)
+                reply = '\n'.join(cleaned).strip()
                 
                 if not reply:
                     reply = response_data['candidates'][0]['content']['parts'][0]['text']
