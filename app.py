@@ -59,6 +59,17 @@ if user_input := st.chat_input("Что вас беспокоит?"):
 
             if response.status_code == 200:
                 reply = response_data['candidates'][0]['content']['parts'][0]['text']
+                if "Ответ:" in reply:
+                    reply = reply.split("Ответ:")[-1].strip()
+                elif "Final answer:" in reply:
+                    reply = reply.split("Final answer:")[-1].strip()
+                elif "Мой ответ:" in reply:
+                    reply = reply.split("Мой ответ:")[-1].strip()
+                reply = reply.replace("*", "").strip()
+                paragraphs = reply.split("\n\n")
+                if len(paragraphs) > 1:
+                    reply = paragraphs[-1].strip()
+                
                 st.markdown(reply)
                 st.session_state.messages.append({"role": "assistant", "content": reply})
             else:
