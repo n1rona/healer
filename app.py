@@ -39,7 +39,7 @@ if user_input := st.chat_input("Что вас беспокоит?"):
 
     with st.chat_message("assistant"):
         try:
-            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemma-3-4b-it:generateContent?key={API_KEY}"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent?key={API_KEY}"
             headers = {'Content-Type': 'application/json'}
             payload = {
                 "contents": [
