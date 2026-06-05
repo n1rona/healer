@@ -50,7 +50,11 @@ if user_input := st.chat_input("Что вас беспокоит?"):
                 ],
                 "generationConfig": {
                     "temperature": 0.7,
-                    "maxOutputTokens": 800
+                    "maxOutputTokens": 800,
+                    "thinkingConfig":
+                    {
+                        "includeThoughts": False
+                    }
                 }
             }
 
