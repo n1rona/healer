@@ -42,6 +42,8 @@ if user_input := st.chat_input("Что вас беспокоит?"):
         try:
             url = f"https://generativelanguage.googleapis.com/v1beta/models/gemma-4-31b-it:generateContent?key={API_KEY}"
             headers = {'Content-Type': 'application/json'}
+            
+            # Адаптируем payload: добавляем параметр "think": False в корень запроса
             payload = {
                 "contents": [
                     {
@@ -50,40 +52,25 @@ if user_input := st.chat_input("Что вас беспокоит?"):
                 ],
                 "generationConfig": {
                     "temperature": 0.7,
-                    "maxOutputTokens": 800,
-                    "thinkingConfig":
-                    {
-                        "includeThoughts": False
-                    }
-                }
+                    "maxOutputTokens": 800
+                },
+                "think": False  # <--- ОТКЛЮЧАЕТ МЫСЛИ ВСЛУХ НА УРОВНЕ API
             }
 
             response = requests.post(url, headers=headers, json=payload)
             response_data = response.json()
 
             if response.status_code == 200:
-                import re
                 reply = response_data['candidates'][0]['content']['parts'][0]['text']
-                thinking_pattern = r'<\|channel\|?>thought\s*<\|?channel\|?>'
-                reply = re.sub(thinking_pattern, '', reply, flags=re.IGNORECASE)
                 
-                lines = reply.splitlines()
-                cleaned = []
-                for line in lines:
-                    s = line.strip()
-                    if not s:
-                        continue
-                    if re.match(r'^(Short\?|Warm/Supportive\?|No medical advice\?|Final answer only\?|Technique:)', s, re.IGNORECASE):
-                        continue
-                    cleaned.append(s)
-                
-                reply = '\n'.join(cleaned).strip()
-                
-                if not reply:
-                    reply = response_data['candidates'][0]['content']['parts'][0]['text']
+                # Поскольку "think": False убирает сам блок мыслей,
+                # нам остается только сделать легкую очистку от лишних пробелов по краям
+                reply = reply.strip()
                 
                 st.markdown(reply)
                 st.session_state.messages.append({"role": "assistant", "content": reply})
+            else:
+                st.error(f"Ошибка API (Код {response.status_code}): {response.text}")
 
         except Exception as e:
             st.error(f"Ошибка запроса: {e}")
